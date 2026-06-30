@@ -1,35 +1,31 @@
 name: Build TrollStore IPA
 
 on:
-  workflow_dispatch: # Permite declanșarea manuală din interfața GitHub
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-14 # Rulează pe instanță de macOS cu Xcode instalat
+    runs-on: macos-14
     
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
-
       - name: Build App Binary
         run: |
           xcodebuild clean build \
-            -project FillStorage.xcodeproj \
+            -project *.xcodeproj \
             -scheme FillStorage \
             -configuration Release \
             -sdk iphoneos \
+            SYMROOT=build \
             CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CONCURRENT_BUILD_NOT_SET=YES
+            CODE_SIGNING_REQUIRED=NO
 
       - name: Package into IPA (TrollStore Style)
         run: |
           mkdir -p Payload
-          # Localizează binarul kompilat .app (calea variază în funcție de proiect)
-          cp -r build/Release-iphoneos/FillStorage.app Payload/
+          cp -r build/Release-iphoneos/*.app Payload/
           zip -r FillStorage.ipa Payload/
 
       - name: Upload Artifact
